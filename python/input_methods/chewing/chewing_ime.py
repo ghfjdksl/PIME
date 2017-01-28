@@ -272,14 +272,6 @@ class ChewingTextService(TextService):
         if self.lastKeyDownTime == 0.0:
             self.lastKeyDownTime = time.time()
 
-        # 使用者開始輸入，還沒送出前的編輯區內容稱 composition string
-        # isComposing() 是 False，表示目前沒有正在編輯中文
-        # 另外，若使用 "`" key 輸入特殊符號，可能會有編輯區是空的，但選字清單開啟，輸入法需要處理的情況
-		# 此時 isComposing() 也會是 True
-        if self.isComposing():
-            return True
-        # --------------   以下都是「沒有」正在輸入中文的狀況   --------------
-
         # 如果按下 Alt，可能是應用程式熱鍵，輸入法不做處理
         if keyEvent.isKeyDown(VK_MENU):
             return False
@@ -288,6 +280,8 @@ class ChewingTextService(TextService):
         if keyEvent.isKeyDown(VK_CONTROL):
             # 開啟 Ctrl 快速輸入符號，輸入法需要此按鍵
             if cfg.easySymbolsWithCtrl and keyEvent.isPrintableChar() and self.langMode == CHINESE_MODE:
+                return True
+            elif keyEvent.isCommaOrStop() and self.langMode == CHINESE_MODE:
                 return True
             else: # 否則可能是應用程式熱鍵，輸入法不做處理
                 return False
@@ -331,6 +325,13 @@ class ChewingTextService(TextService):
         if keyEvent.isPrintableChar() and keyEvent.keyCode != VK_SPACE:
             return True
 
+        # 使用者開始輸入，還沒送出前的編輯區內容稱 composition string
+        # isComposing() 是 False，表示目前沒有正在編輯中文
+        # 另外，若使用 "`" key 輸入特殊符號，可能會有編輯區是空的，但選字清單開啟，輸入法需要處理的情況
+		# 此時 isComposing() 也會是 True
+        # ghfjdksl: least priority
+        if self.isComposing():
+            return True
         # 其餘狀況一律不處理，原按鍵輸入直接送還給應用程式
         return False
 
@@ -352,6 +353,8 @@ class ChewingTextService(TextService):
         if cfg.easySymbolsWithShift and keyEvent.isKeyDown(VK_SHIFT):
             chewingContext.set_easySymbolInput(1)
         elif cfg.easySymbolsWithCtrl and keyEvent.isKeyDown(VK_CONTROL):
+            chewingContext.set_easySymbolInput(1)
+        elif keyEvent.isCommaOrStop() and keyEvent.isKeyDown(VK_CONTROL):
             chewingContext.set_easySymbolInput(1)
         else:
             chewingContext.set_easySymbolInput(0)
@@ -401,9 +404,9 @@ class ChewingTextService(TextService):
                     # NOTE: libchewing 有 bug: 當啟用 "使用空白鍵選字" 時，chewing_handle_Space()
                     # 會忽略空白鍵，造成打不出空白。因此在此只有當 composition string 有內容
                     # 有需要選字時，才呼叫 handle_Space()，否則改用 handle_Default()，以免空白鍵被吃掉
-                    if self.isComposing():
-                        chewingContext.handle_Space()
-                    else:
+                    #if self.isComposing():
+                    #    chewingContext.handle_Space()
+                    #else:
                         chewingContext.handle_Default(charCode)
                 elif keyEvent.isKeyDown(VK_CONTROL) and charStr.isdigit(): # Ctrl + 數字(0-9)
                     chewingContext.handle_CtrlNum(charCode)
