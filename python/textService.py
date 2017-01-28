@@ -54,6 +54,12 @@ class KeyEvent:
     def isPrintableChar(self):
         return self.charCode > 0x1f and self.charCode != 0x7f
 
+    def isCommaOrStop(self):
+        return self.charCode == 0x2c or self.charCode == 0x2e
+
+    def isEnter(self):
+        return self.charCode == 0x0D
+
 
 class TextService:
     def __init__(self, client):

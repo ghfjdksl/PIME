@@ -73,6 +73,7 @@ ID_OUTPUT_SIMP_CHINESE = 18
 ID_USER_PHRASE_EDITOR = 19
 
 
+
 class ChewingTextService(TextService):
     def __init__(self, client):
         TextService.__init__(self, client)
@@ -225,7 +226,6 @@ class ChewingTextService(TextService):
             tooltip = "設定",
             type = "menu"
         )
-
     # 使用者離開輸入法
     def onDeactivate(self):
         TextService.onDeactivate(self)
